@@ -119,20 +119,16 @@ PPO (trained)	12,820	8.5	98%
 
 📚 Dependencies
 Python ≥ 3.8
-
 NumPy
-
 SciPy
-
 Matplotlib
-
 Gym
-
 PyTorch (for PPO)
-
 Jupyter (for notebooks)
 
 See requirements.txt for exact versions.
+
+
 
 📖 Background & References
 Walker Delta Constellation: J. G. Walker, "Circular Orbit Patterns", 1984.
