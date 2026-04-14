@@ -8,7 +8,7 @@ Reinforcement learning (PPO,SAC) for optimal routing in LEO satellite constellat
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Python 3.8+](https://img.shields.io/badge/python-3.8+-blue.svg)](https://www.python.org/downloads/)
 
-This repository implements and compares **reinforcement learning (PPO)** and **A* search** for finding optimal communication paths in Low Earth Orbit (LEO) satellite constellations. The environment models Earth geometry, line-of-sight constraints, and realistic Walker-Delta orbits.
+This repository implements  **reinforcement learning (PPO & SAC)** and **A* search** for finding optimal communication paths in Low Earth Orbit (LEO) satellite constellations. The environment models Earth geometry, line-of-sight constraints, and realistic Walker-Delta orbits.
 
 ## 📖 Overview
 
