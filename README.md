@@ -39,10 +39,10 @@ The code originates from research on autonomous routing policies for space netwo
 
 ├── agents/
 │ ├── ppo_agent.py # PPO implementation (actor-critic)
-│ └── a_star_baseline.py # A search wrapper
+  └── a_star_baseline.py # A search wrapper
 
 ├── notebooks/
-│ └── Los_reward_ppo_DW_5th_updates_gym_learning_initial_final_def.ipynb # Main experimentation notebook
+└── Los_reward_ppo_DW_5th_updates_gym_learning_initial_final_def.ipynb # Main experimentation notebook
 
 
 ├── train.py # Training script for PPO agent
@@ -50,7 +50,6 @@ The code originates from research on autonomous routing policies for space netwo
 ├── requirements.txt
 └── README.md
 
-text
 
 ## 🚀 Installation
 
@@ -61,43 +60,49 @@ text
 
    
 Create and activate a virtual environment (optional):
-
 bash
 python -m venv venv
 source venv/bin/activate   # Linux/Mac
 venv\Scripts\activate      # Windows
 Install dependencies:
 
+
 bash
 pip install -r requirements.txt
+
+
+
 🧪 Usage
-1. Generate a Walker-Delta Constellation
-python
+
+Generate a Walker-Delta Constellation
+
+   
 from environment.constellation import delta_walker_constellation
 
 satellites = delta_walker_constellation(P=12, S=24, altitude=550, inclination=53.0)
-2. Run A* Baseline Routing
-python
-from environment.routing_utils import a_star_routing, geodetic_to_eci
-
-source = geodetic_to_eci(52.52, 13.405, 0)   # Berlin
-target = geodetic_to_eci(-33.9249, 18.4241, 0)  # Cape Town
-
-distance, visited, path = a_star_routing(source, target, satellites)
-print(f"Shortest path distance: {distance:.2f} km")
 
 
-3. Train a PPO Agent
-bash
+Train a PPO Agent
+
+
 python train.py --config configs/ppo_config.yaml
 4. Evaluate and Compare
 bash
 python eval.py --checkpoint runs/ppo_best.pth --episodes 100
+
+
+
+
+
 📈 Results
 Method	Avg. Path Length (km)	Avg. Hops	Success Rate
 A* (optimal)	12,450	8.2	100%
 PPO (trained)	12,820	8.5	98%
 *Example results for a 300‑satellite Walker‑Delta constellation (P=12, S=25).*
+
+
+
+
 
 📚 Dependencies
 Python ≥ 3.8
@@ -122,6 +127,10 @@ Walker Delta Constellation: J. G. Walker, "Circular Orbit Patterns", 1984.
 *A Search**: Hart, Nilsson, Raphael, 1968.
 
 PPO: Schulman et al., "Proximal Policy Optimization Algorithms", 2017.
+
+
+
+
 
 🤝 Contributing
 Contributions are welcome! Please open an issue or submit a pull request for improvements, bug fixes, or new features.
