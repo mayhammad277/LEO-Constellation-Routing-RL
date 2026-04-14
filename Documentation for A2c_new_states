@@ -1,0 +1,194 @@
+# 
+This repository contains a custom OpenAI Gym environment for simulating satellite routing using a Delta Walker constellation. The environment is designed to be used with reinforcement learning algorithms, specifically the Advantage Actor-Critic (A2C) algorithm from the stable-baselines3 library.
+
+Overview
+The environment models a satellite constellation where the goal is to optimize the routing between two points on Earth (Berlin and Cape Town) by adjusting the parameters of the satellite constellation. The constellation is defined by the following parameters:
+
+
+
+Inclination: Inclination of the orbital planes in degrees.
+
+The environment uses the A* algorithm to compute the shortest path between the source and target points, and the reward function is designed to balance coverage, latency, and path length.
+
+Installation
+To use this environment, you need to have Python 3.7 or later installed. You can install the required dependencies using the following command:
+
+
+pip install gym numpy matplotlib stable-baselines3
+Usage
+
+Environment Initialization
+The environment can be initialized as follows:
+
+
+import gym
+from stable_baselines3 import A2C
+
+env = SatelliteRoutingEnv()
+Training the A2C Model
+To train the A2C model on the environment, you can use the following code:
+
+
+model = A2C("MlpPolicy", env, verbose=1)
+model.learn(total_timesteps=500)
+model.save("a2c_satellite_routing")
+
+Evaluating the Model
+
+
+epochs = 0
+rewards = []
+obs = env.reset()
+
+while epochs < 2:
+    action, _states = model.predict(obs)
+    obs, reward, done, _ = env.step(action)
+    rewards.append(reward)
+    epochs += 1
+    print(f"Action: {action}, Reward: {reward}")
+
+
+Plotting the Results
+
+
+
+import matplotlib.pyplot as plt
+
+plt.plot(rewards)
+plt.xlabel("Episode")
+plt.ylabel("Reward")
+plt.title("A2C Reward Over Time")
+plt.show()
+Code Structure
+SatelliteRoutingEnv: The custom Gym environment that defines the satellite routing problem.
+
+__init__: Initializes the environment with default parameters.
+
+reset: Resets the environment to its initial state.
+
+step: Executes an action and returns the new state, reward, and whether the episode is done.
+
+compute_reward: Computes the reward based on the distance, number of visited satellites, and path length.
+
+delta_walker_constellation: Generates the satellite positions based on the Delta Walker constellation parameters.
+
+a_star_routing: Implements the A* algorithm for routing between two points.
+
+great_circle_distance: Computes the great-circle distance between two points.
+
+satellite_coverage_check: Checks if two satellites are within communication range.
+
+geodetic_to_eci: Converts geodetic coordinates (latitude, longitude, altitude) to Earth-Centered Inertial (ECI) coordinates.
+
+Dependencies
+gym: The OpenAI Gym library for creating and managing environments.
+
+numpy: For numerical computations.
+
+matplotlib: For plotting the results.
+
+stable-baselines3: For implementing the A2C reinforcement learning algorithm.
+
+
+
+
+comments.py
+
+# This file contains detailed comments about each function in the SatelliteRoutingEnv class
+# and the main script. These comments explain the purpose and functionality of each function.
+
+# --------------------------------------------------------------------------------------
+# SatelliteRoutingEnv Class
+# --------------------------------------------------------------------------------------
+
+# __init__: Initializes the SatelliteRoutingEnv environment.
+#   - Sets up the Earth's radius (R_E), constellation parameters (P, S, altitude, inclination),
+#     and the positions of the source (Berlin) and target (Cape Town) in ECI coordinates.
+#   - Defines the action space (MultiDiscrete) and observation space (Box) for the environment.
+#   - Generates the initial satellite constellation using the Delta Walker pattern.
+
+# _generate_random_state: Generates a random initial state for the environment.
+#   - Returns a numpy array containing the initial values for P, S, altitude, and inclination.
+
+# reset: Resets the environment to its initial state.
+#   - Regenerates the satellite constellation based on the current state parameters.
+#   - Returns the initial state as a numpy array.
+
+# step: Executes an action and updates the environment state.
+#   - Applies the action to adjust the constellation parameters (P, S, altitude, inclination).
+#   - Regenerates the satellite constellation with the updated parameters.
+#   - Computes the shortest path between the source and target using the A* algorithm.
+#   - Calculates the reward based on the distance, number of visited satellites, and path length.
+#   - Returns the new state, reward, done flag, and additional info (distance, path length).
+
+# compute_reward: Computes the reward for a given step.
+#   - Reward is based on coverage, latency, and path length.
+#   - Coverage is calculated using the altitude and number of satellites.
+#   - Latency is derived from the distance between source and target.
+#   - Penalizes longer paths and higher latency.
+
+# calculate_coverage: Calculates the coverage of the satellite constellation.
+#   - Coverage is a function of altitude and the number of satellites.
+#   - Returns a value between 0 and 1 representing the coverage percentage.
+
+# eci_to_lat_lon: Converts Earth-Centered Inertial (ECI) coordinates to latitude and longitude.
+#   - Takes ECI coordinates (x, y, z) and returns the corresponding latitude and longitude in degrees.
+
+# delta_walker_constellation: Generates a Delta Walker satellite constellation.
+#   - Creates a set of satellite positions in ECI coordinates based on the given parameters:
+#     P (number of planes), S (satellites per plane), altitude, and inclination.
+#   - Returns a dictionary where keys are satellite indices and values are ECI coordinates.
+
+# a_star_routing: Implements the A* algorithm for routing between two points.
+#   - Finds the shortest path between the source and target using the A* algorithm.
+#   - Uses great-circle distance as the heuristic and edge cost.
+#   - Returns the total distance, list of visited satellites, and the path indices.
+
+# great_circle_distance: Computes the great-circle distance between two points.
+#   - Calculates the shortest distance between two points on the surface of a sphere (Earth).
+#   - Returns the distance in kilometers.
+
+# satellite_coverage_check: Checks if two satellites are within communication range.
+#   - Determines if two satellites can communicate based on their positions and a threshold distance.
+#   - Returns True if they are within range, otherwise False.
+
+# geodetic_to_eci: Converts geodetic coordinates (latitude, longitude, altitude) to ECI coordinates.
+#   - Converts latitude, longitude, and altitude into ECI coordinates (x, y, z).
+#   - Uses the current UTC time to account for Earth's rotation.
+
+# julian_date: Calculates the Julian date for a given UTC time.
+#   - Converts a datetime object into a Julian date, which is used for astronomical calculations.
+
+# gst_from_julian: Calculates the Greenwich Sidereal Time (GST) from a Julian date.
+#   - Computes the GST, which is used to convert between geodetic and ECI coordinates.
+
+# --------------------------------------------------------------------------------------
+# Main Script
+# --------------------------------------------------------------------------------------
+
+# epochs: Counter for the number of episodes during evaluation.
+# env: Instance of the SatelliteRoutingEnv environment.
+# rewards: List to store rewards obtained during evaluation.
+# obs: Initial observation (state) after resetting the environment.
+
+# A2C Model:
+#   - Initializes an A2C model using the "MlpPolicy" and the custom environment.
+#   - Trains the model for 500 timesteps and saves it to a file named "a2c_satellite_routing".
+
+# Evaluation Loop:
+#   - Runs the environment for 2 episodes using the trained model.
+#   - Prints the action and reward for each step.
+#   - Stores the rewards for plotting.
+
+# Plotting:
+#   - Plots the rewards over time using Matplotlib.
+#   - The x-axis represents the episode number, and the y-axis represents the reward.
+
+# --------------------------------------------------------------------------------------
+# Notes
+# --------------------------------------------------------------------------------------
+
+# - The environment is designed to optimize satellite routing by adjusting constellation parameters.
+# - The A* algorithm is used to find the shortest path between two points on Earth.
+# - The reward function balances coverage, latency, and path length to encourage efficient routing.
+# - The code is modular and can be extended to include additional features or constraints.
