@@ -8,17 +8,21 @@ Reinforcement learning (PPO,SAC) for optimal routing in LEO satellite constellat
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Python 3.8+](https://img.shields.io/badge/python-3.8+-blue.svg)](https://www.python.org/downloads/)
 
-This repository implements  **reinforcement learning (PPO & SAC)** and **A* search** for finding optimal communication paths in Low Earth Orbit (LEO) satellite constellations. The environment models Earth geometry, line-of-sight constraints, and realistic Walker-Delta orbits.
+This repository implements  **reinforcement learning (PPO & SAC)** and **A* search** for finding optimal communication paths in Low Earth Orbit (LEO) satellite constellations. The environment models Earth geometry, line-of-sight constraints, and realistic Walker-Delta orbits with parameters (planes, altitude, inclination) for minimized routing latency and maximized Line-of-Sight (LOS) connectivity.
 
 ## 📖 Overview
 
-Efficient routing in mega-constellations (e.g., Starlink, OneWeb) is challenging due to dynamic topologies and Earth occlusion. This project provides:
+🛰️ Overview
+The project simulates a Delta Walker constellation and evaluates its performance by finding the shortest communication path between major global cities (e.g., Berlin to Cape Town, New York to Tokyo) using an A Routing algorithm*. 
+The RL agent explores the trade-offs between the number of orbital planes, satellites per plane, altitude, and inclination to maximize network efficiency.✨ Key FeaturesCustom Gym Environment: SatelliteRoutingEnv manages the state of the constellation and calculates rewards based on routing performance.Delta Walker Constellation 
 
-- A **Gym-style environment** for satellite network routing.
-- **A* heuristic search** as an optimal baseline (shortest-path with great-circle distances).
-- **Proximal Policy Optimization (PPO)** agent that learns to select next-hop satellites to minimize total path delay.
-- **Walker-Delta constellation generator** for customizable orbit configurations.
 
+
+
+Generator: Mathematically generates 3D satellite positions in Earth-Centered Inertial (ECI) coordinates.Intelligent Routing: 
+Implements A* pathfinding with Line-of-Sight (LOS) constraints, ensuring inter-satellite links (ISL) are not obstructed by the Earth.Multi-Algorithm Support: Integration with Stable-Baselines3 for training PPO and A2C agents. 
+
+3D Visualization: Comprehensive plotting tools to visualize the constellation, ground stations, and the active routing path.🛠️ Installation: Bash pip install gym numpy matplotlib scipy stable-baselines3 skyfield shimmy
 The code originates from research on autonomous routing policies for space networks.
 
 ## ✨ Features
@@ -29,77 +33,38 @@ The code originates from research on autonomous routing policies for space netwo
 - 🤖 **PPO Learning**: Train an RL agent to make hop-by-hop routing decisions.
 - 📊 **Visualization & Metrics**: Compare learned policies against optimal A* paths.
 
-## 📁 Repository Structure
-.
-├── environment/
-
-│ ├── satellite_env.py # Gym environment for routing
-│ ├── constellation.py # Walker-Delta orbit generation
-│ └── routing_utils.py # A, coverage checks, coordinate transforms
-
-├── agents/
-│ ├── ppo_agent.py # PPO implementation (actor-critic)
-  └── a_star_baseline.py # A search wrapper
-
-├── notebooks/
-└── Los_reward_ppo_DW_5th_updates_gym_learning_initial_final_def.ipynb # Main experimentation notebook
-
-
-├── train.py # Training script for PPO agent
-├── eval.py # Evaluation and comparison
-├── requirements.txt
-└── README.md
-
-
-## 🚀 Installation
-
-1. Clone the repository:
-   ```bash
-   git clone https://github.com/mayhammad277/LEO-Constellation-Routing-RL
-   cd LEO-Constellation-Routing-RL
-
-   
-Create and activate a virtual environment (optional):
-bash
-python -m venv venv
-source venv/bin/activate   # Linux/Mac
-venv\Scripts\activate      # Windows
-Install dependencies:
-
-
-bash
-pip install -r requirements.txt
 
 
 
-🧪 Usage
+🚀 Environment Design State Space. The agent observes the current constellation configuration:P: Number of orbital planes.S: Number of satellites per plane. Altitude: Orbital height (km).Inclination: Orbital tilt (degrees).Action SpaceA continuous Box space allowing the agent to fine-tune:$\Delta P$, $\Delta S$, $\Delta \text{Altitude}$, and $\Delta \text{Inclination}$.Reward Function:
 
-Generate a Walker-Delta Constellation
-
-   
-from environment.constellation import delta_walker_constellation
-
-satellites = delta_walker_constellation(P=12, S=24, altitude=550, inclination=53.0)
+The reward is a multi-objective function that penalizes latency and hops while rewarding successful LOS connectivity. Latency Penalty: High total path distance reduces reward.Hop Penalty: Minimizing the number of satellites in a path is prioritized.LOS Bonus: Successfully maintaining Line-of-Sight links between nodes.📈 Usage: Training an Agent.
 
 
-Train a PPO Agent
+To train a PPO agent on the environment: Python from stable_baselines3 import PPO
+from los_ppo_dw import SatelliteRoutingEnv
 
-
-python train.py --config configs/ppo_config.yaml
-4. Evaluate and Compare
-bash
-python eval.py --checkpoint runs/ppo_best.pth --episodes 100
+env = SatelliteRoutingEnv()
+model = PPO("MlpPolicy", env, verbose=1, learning_rate=0.00001)
+model.learn(total_timesteps=800000)
+model.save("ppo_satellite_routing")
 
 
 
 
 
-📈 Results
-Method	Avg. Path Length (km)	Avg. Hops	Success Rate
-A* (optimal)	12,450	8.2	100%
-PPO (trained)	12,820	8.5	98%
-*Example results for a 300‑satellite Walker‑Delta constellation (P=12, S=25).*
+Evaluation & VisualizationThe environment provides a built-in method to visualize the learned constellation and the resulting route: Pythonplot_constellation_with_route(env.satellites_eci, path_indices, env.A, env.B)
 
+
+
+🗺️ Routing LogicThe system uses the Great Circle Distance for heuristic estimation in the A* algorithm. It checks for Line-of-Sight (LOS) between any two nodes to ensure the Earth's limb does not interfere with the signal.
+
+
+
+
+
+
+📊 ResultsThe project includes scripts to compare PPO and A2C performance, providing automated plots of:Episode Reward Over Time.Average Latency vs. Constellation Density.Hyperparameter tuning results for different learning rates and gammas.Developed for research in Satellite Network Optimization and Reinforcement Learning.
 
 
 <img width="650" height="658" alt="download (9)" src="https://github.com/user-attachments/assets/e0216814-91d2-4e38-a63c-e5f1377f606b" />
