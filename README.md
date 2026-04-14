@@ -32,14 +32,19 @@ The code originates from research on autonomous routing policies for space netwo
 ## 📁 Repository Structure
 .
 ├── environment/
+
 │ ├── satellite_env.py # Gym environment for routing
 │ ├── constellation.py # Walker-Delta orbit generation
 │ └── routing_utils.py # A, coverage checks, coordinate transforms
+
 ├── agents/
 │ ├── ppo_agent.py # PPO implementation (actor-critic)
 │ └── a_star_baseline.py # A search wrapper
+
 ├── notebooks/
 │ └── Los_reward_ppo_DW_5th_updates_gym_learning_initial_final_def.ipynb # Main experimentation notebook
+
+
 ├── train.py # Training script for PPO agent
 ├── eval.py # Evaluation and comparison
 ├── requirements.txt
