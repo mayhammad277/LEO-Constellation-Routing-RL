@@ -126,7 +126,7 @@ Multi-Shell Solution :
 
 
 📚 Dependencies:
-
+```
 - Python ≥ 3.8
 - NumPy
 - SciPy
@@ -137,7 +137,7 @@ Multi-Shell Solution :
 
 See requirements.txt for exact versions.
 
-
+```
 
 
 
