@@ -115,14 +115,15 @@ Multi-Shell Solution :
 ---------------------------------------------------------------------------------------------------------------
 
 
-📚 Dependencies
-- **Python ≥ 3.8
--**NumPy
--**SciPy
--**Matplotlib
--**Gym
--**PyTorch (for PPO)
--**Jupyter (for notebooks)
+📚 Dependencies:
+
+- Python ≥ 3.8
+- NumPy
+- SciPy
+- Matplotlib
+- Gym
+- PyTorch (for PPO)
+- Jupyter (for notebooks)
 
 See requirements.txt for exact versions.
 
