@@ -36,12 +36,20 @@ The code originates from research on autonomous routing policies for space netwo
 
 
 
-🚀 Environment Design State Space. The agent observes the current constellation configuration:P: Number of orbital planes.S: Number of satellites per plane. Altitude: Orbital height (km).Inclination: Orbital tilt (degrees).Action SpaceA continuous Box space allowing the agent to fine-tune:$\Delta P$, $\Delta S$, $\Delta \text{Altitude}$, and $\Delta \text{Inclination}$.Reward Function:
+🚀 Environment Design State Space:
+
+
+The agent observes the current constellation configuration:P: Number of orbital planes.S: Number of satellites per plane. Altitude: Orbital height (km).Inclination: Orbital tilt (degrees).Action SpaceA continuous Box space allowing the agent to fine-tune:$\Delta P$, $\Delta S$, $\Delta \text{Altitude}$, and $\Delta \text{Inclination}$.Reward Function:
 
 The reward is a multi-objective function that penalizes latency and hops while rewarding successful LOS connectivity. Latency Penalty: High total path distance reduces reward.Hop Penalty: Minimizing the number of satellites in a path is prioritized.LOS Bonus: Successfully maintaining Line-of-Sight links between nodes.📈 Usage: Training an Agent.
 
 
-To train a PPO agent on the environment: Python from stable_baselines3 import PPO
+
+
+
+To train a PPO agent on the environment:
+
+Python from stable_baselines3 import PPO
 from los_ppo_dw import SatelliteRoutingEnv
 
 env = SatelliteRoutingEnv()
@@ -53,18 +61,20 @@ model.save("ppo_satellite_routing")
 
 
 
+
 Evaluation & VisualizationThe environment provides a built-in method to visualize the learned constellation and the resulting route: Pythonplot_constellation_with_route(env.satellites_eci, path_indices, env.A, env.B)
 
 
 
-🗺️ Routing LogicThe system uses the Great Circle Distance for heuristic estimation in the A* algorithm. It checks for Line-of-Sight (LOS) between any two nodes to ensure the Earth's limb does not interfere with the signal.
+🗺️ Routing Logic: The system uses the Great Circle Distance for heuristic estimation in the A* algorithm. It checks for Line-of-Sight (LOS) between any two nodes to ensure the Earth's limb does not interfere with the signal.
 
 
 
 
 
 
-📊 ResultsThe project includes scripts to compare PPO and A2C performance, providing automated plots of:Episode Reward Over Time.Average Latency vs. Constellation Density.Hyperparameter tuning results for different learning rates and gammas.Developed for research in Satellite Network Optimization and Reinforcement Learning.
+📊 Results: The project includes scripts to compare PPO and A2C performance, providing automated plots of: Episode Reward Over Time.
+Average Latency vs. Constellation Density.Hyperparameter tuning results for different learning rates and gammas.Developed for research in Satellite Network Optimization and Reinforcement Learning.
 
 
 
@@ -94,6 +104,14 @@ Multi-Shell Solution :
 
 
 
+
+
+
+
+
+
+
+
 📚 Dependencies
 Python ≥ 3.8
 NumPy
@@ -104,6 +122,17 @@ PyTorch (for PPO)
 Jupyter (for notebooks)
 
 See requirements.txt for exact versions.
+
+
+
+
+
+
+
+
+
+
+
 
 
 
