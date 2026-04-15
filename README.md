@@ -19,10 +19,14 @@ The RL agent explores the trade-offs between the number of orbital planes, satel
 
 
 
-Generator: Mathematically generates 3D satellite positions in Earth-Centered Inertial (ECI) coordinates.Intelligent Routing: 
-Implements A* pathfinding with Line-of-Sight (LOS) constraints, ensuring inter-satellite links (ISL) are not obstructed by the Earth.Multi-Algorithm Support: Integration with Stable-Baselines3 for training PPO and A2C agents. 
+- Generator: Mathematically generates 3D satellite positions in Earth-Centered Inertial (ECI) coordinates.Intelligent Routing: 
+- Implements A* pathfinding with Line-of-Sight (LOS) constraints, ensuring inter-satellite links (ISL) are not obstructed by the Earth.
+- Multi-Algorithm Support: Integration with Stable-Baselines3 for training PPO and A2C agents. 
 
-3D Visualization: Comprehensive plotting tools to visualize the constellation, ground stations, and the active routing path.🛠️ Installation: Bash pip install gym numpy matplotlib scipy stable-baselines3 skyfield shimmy
+
+- 3D Visualization: Comprehensive plotting tools to visualize the constellation, ground stations, and the active routing path.
+
+- 🛠️ Installation: Bash pip install gym numpy matplotlib scipy stable-baselines3 skyfield shimmy
 The code originates from research on autonomous routing policies for space networks.
 
 ## ✨ Features
@@ -42,9 +46,12 @@ The code originates from research on autonomous routing policies for space netwo
 🚀 Environment Design State Space:
 
 
-The agent observes the current constellation configuration:P: Number of orbital planes.S: Number of satellites per plane. Altitude: Orbital height (km).Inclination: Orbital tilt (degrees).Action SpaceA continuous Box space allowing the agent to fine-tune:$\Delta P$, $\Delta S$, $\Delta \text{Altitude}$, and $\Delta \text{Inclination}$.Reward Function:
+- The agent observes the current constellation configuration:P: Number of orbital planes.S: Number of satellites per plane. Altitude: Orbital height (km).Inclination: Orbital tilt (degrees).
+- Action SpaceA continuous Box space allowing the agent to fine-tune:$\Delta P$, $\Delta S$, $\Delta \text{Altitude}$, and $\Delta \text{Inclination}$.Reward Function:
 
-The reward is a multi-objective function that penalizes latency and hops while rewarding successful LOS connectivity. Latency Penalty: High total path distance reduces reward.Hop Penalty: Minimizing the number of satellites in a path is prioritized.LOS Bonus: Successfully maintaining Line-of-Sight links between nodes.📈 Usage: Training an Agent.
+- The reward is a multi-objective function that penalizes latency and hops while rewarding successful LOS connectivity. Latency Penalty: High total path distance reduces reward.
+
+- Hop Penalty: Minimizing the number of satellites in a path is prioritized.LOS Bonus: Successfully maintaining Line-of-Sight links between nodes.📈 Usage: Training an Agent.
 
 
 
