@@ -36,6 +36,9 @@ The code originates from research on autonomous routing policies for space netwo
 
 
 
+
+
+
 🚀 Environment Design State Space:
 
 
@@ -109,17 +112,17 @@ Multi-Shell Solution :
 
 
 
-
+---------------------------------------------------------------------------------------------------------------
 
 
 📚 Dependencies
-Python ≥ 3.8
-NumPy
-SciPy
-Matplotlib
-Gym
-PyTorch (for PPO)
-Jupyter (for notebooks)
+- **Python ≥ 3.8
+-**NumPy
+-**SciPy
+-**Matplotlib
+-**Gym
+-**PyTorch (for PPO)
+-**Jupyter (for notebooks)
 
 See requirements.txt for exact versions.
 
