@@ -60,8 +60,7 @@ The code originates from research on autonomous routing policies for space netwo
 - Training an Agent
 - To train a PPO agent on the environment:
 - 
-<details>
-<summary><b>View the full Environment Setup</b></summary>
+
 ```python
 from stable_baselines3 import PPO
 from los_ppo_dw import SatelliteRoutingEnv
