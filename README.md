@@ -59,8 +59,10 @@ The code originates from research on autonomous routing policies for space netwo
 📈 Usage
 - Training an Agent
 - To train a PPO agent on the environment:
-
-
+- 
+<details>
+<summary><b>View the full Environment Setup</b></summary>
+```python
 from stable_baselines3 import PPO
 from los_ppo_dw import SatelliteRoutingEnv
 
@@ -69,7 +71,7 @@ model = PPO("MlpPolicy", env, verbose=1, learning_rate=0.00001)
 model.learn(total_timesteps=800000)
 model.save("ppo_satellite_routing")
 
-
+```
 
 
 
