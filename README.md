@@ -31,10 +31,6 @@ The code originates from research on autonomous routing policies for space netwo
 
 
  <br><br> <br><br> <br><br>
- <br><br> <br><br> <br><br>
-
-
-
 
 
 
@@ -44,8 +40,6 @@ The code originates from research on autonomous routing policies for space netwo
 
 
  <br><br> <br><br> <br><br>
- <br><br> <br><br> <br><br>
-
 
 
 
@@ -55,7 +49,6 @@ Multi-Shell Solution :
 <img width="650" height="658" alt="download (5)" src="https://github.com/user-attachments/assets/246acd43-23bb-4a50-ad77-40863e954f6d" />
 
 
- <br><br> <br><br> <br><br>
  <br><br> <br><br> <br><br>
 
 
