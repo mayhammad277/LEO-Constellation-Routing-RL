@@ -31,14 +31,21 @@ The code originates from research on autonomous routing policies for space netwo
 <img width="650" height="658" alt="download (9)" src="https://github.com/user-attachments/assets/e0216814-91d2-4e38-a63c-e5f1377f606b" />
 
 
- 
+ <br><br> <br><br> <br><br>
+ <br><br> <br><br> <br><br>
+
+
+
+
+
 
 
 <img width="650" height="658" alt="download (8)" src="https://github.com/user-attachments/assets/e85a4b3e-7a8c-4306-a0e7-4682d5e348ae" />
 
 
 
-
+ <br><br> <br><br> <br><br>
+ <br><br> <br><br> <br><br>
 
 
 
@@ -49,6 +56,15 @@ Multi-Shell Solution :
 <img width="650" height="658" alt="download (5)" src="https://github.com/user-attachments/assets/246acd43-23bb-4a50-ad77-40863e954f6d" />
 
 
+ <br><br> <br><br> <br><br>
+ <br><br> <br><br> <br><br>
+
+
+## 🔗 Simulation Page
+
+For a live simulation or more interactive exploration, visit the [GitHub Simulation Page](https://github.com/yourusername/yourrepo).
+
+<!-- Replace the above link with your actual simulation page URL -->
 ## 📈 Usage
 
 ### Training an Agent
