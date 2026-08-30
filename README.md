@@ -11,7 +11,7 @@ The project simulates a Delta Walker constellation and evaluates its performance
 ### ✨ Key Features
 
 - **Custom Gym Environment**: `SatelliteRoutingEnv` manages the state of the constellation and calculates rewards based on routing performance.
-- **Delta Walker Constellation Generator**: Mathematically generates 3D satellite positions in Earth-Centered Inertial (ECI) coordinates.
+- ** Constellation Generator**: Mathematically generates 3D satellite optimal positions in Earth-Centered Inertial (ECI) coordinates.
 - **Intelligent Routing**: Implements a shortest-path search with Line-of-Sight (LOS) constraints, ensuring inter-satellite links (ISL) are not obstructed by the Earth.
 - **Multi-Algorithm Support**: Integration with Stable-Baselines3 for training reinforcement learning agents (on-policy and off-policy).
 - **3D Visualization**: Comprehensive plotting tools to visualize the constellation, ground stations, and the active routing path.
@@ -21,8 +21,8 @@ The code originates from research on autonomous routing policies for space netwo
 ## ✨ Features
 
 - 🌍 **Realistic Earth Geometry**: ECI coordinate conversions, line-of-sight checks, and great-circle distances.
-- 🛰️ **Walker-Delta Constellations**: Generate `P` orbital planes with `S` satellites each.
-- 🧭 **Heuristic Search Baseline**: Guaranteed shortest path using a satellite connectivity graph and an admissible heuristic.
+- 🛰️ ** Constellations**: Generate `P` orbital planes with `S` satellites each.
+- 🧭 ** Baseline**: Guaranteed shortest path using a satellite connectivity graph and an admissible heuristic.
 - 🤖 **Reinforcement Learning**: Train an agent to make hop-by-hop routing decisions.
 - 📊 **Visualization & Metrics**: Compare learned policies against optimal paths obtained from the baseline.
 
