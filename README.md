@@ -28,6 +28,25 @@ The code originates from research on autonomous routing policies for space netwo
 - 📊 **Visualization & Metrics**: Compare learned policies against optimal paths obtained from the baseline.
 
 
+<img width="650" height="658" alt="download (9)" src="https://github.com/user-attachments/assets/e0216814-91d2-4e38-a63c-e5f1377f606b" />
+
+
+ 
+
+
+<img width="650" height="658" alt="download (8)" src="https://github.com/user-attachments/assets/e85a4b3e-7a8c-4306-a0e7-4682d5e348ae" />
+
+
+
+
+
+
+
+
+Multi-Shell Solution :
+
+
+<img width="650" height="658" alt="download (5)" src="https://github.com/user-attachments/assets/246acd43-23bb-4a50-ad77-40863e954f6d" />
 
 
 ## 📈 Usage
@@ -44,3 +63,7 @@ env = SatelliteRoutingEnv()
 model = YourAlgorithm("MlpPolicy", env, verbose=1, learning_rate=0.00001)
 model.learn(total_timesteps=800000)
 model.save("rl_satellite_routing")
+
+
+
+
