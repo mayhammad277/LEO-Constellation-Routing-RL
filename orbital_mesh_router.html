@@ -1,0 +1,682 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Orbital Mesh Router</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#03050a;
+    --panel:rgba(8,14,24,0.74);
+    --panel-border:rgba(123,255,224,0.16);
+    --mint:#7bffe0;
+    --green:#6bffb0;
+    --amber:#ffb454;
+    --text:#dff3ff;
+    --muted:#5f7f99;
+    --mono: ui-monospace, SFMono-Regular, "JetBrains Mono", Menlo, Consolas, monospace;
+    --sans: "Space Grotesk", ui-sans-serif, system-ui, -apple-system, sans-serif;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;width:100%;height:100%;background:var(--bg);overflow:hidden;font-family:var(--sans);}
+  #app{position:relative;width:100vw;height:100vh;}
+  #canvas-container{position:absolute;inset:0;cursor:grab;}
+  #canvas-container:active{cursor:grabbing;}
+  #labels{position:absolute;inset:0;pointer-events:none;}
+  .station-label{
+    position:absolute;transform:translate(-50%,-160%);
+    font-family:var(--mono);font-size:10px;letter-spacing:0.06em;
+    color:var(--muted);white-space:nowrap;text-transform:uppercase;
+    text-shadow:0 0 6px rgba(0,0,0,0.9);
+    transition:color 0.2s;
+  }
+  .station-label::before{
+    content:'';position:absolute;left:50%;top:100%;transform:translateX(-50%);
+    width:3px;height:3px;border-radius:50%;background:var(--muted);margin-top:6px;
+  }
+  .station-label.active{color:var(--text);font-weight:600;}
+  .station-label.src{color:var(--green);}
+  .station-label.src::before{background:var(--green);box-shadow:0 0 6px var(--green);}
+  .station-label.dst{color:var(--amber);}
+  .station-label.dst::before{background:var(--amber);box-shadow:0 0 6px var(--amber);}
+
+  .panel{
+    position:absolute;background:var(--panel);border:1px solid var(--panel-border);
+    border-radius:6px;backdrop-filter:blur(10px);color:var(--text);
+    padding:14px 16px;
+  }
+  #hud{top:16px;left:16px;width:250px;}
+  #hud h1{
+    font-family:var(--sans);font-size:14px;font-weight:700;letter-spacing:0.08em;
+    margin:0 0 2px 0;color:var(--mint);text-transform:uppercase;
+  }
+  #hud .sub{font-family:var(--mono);font-size:10px;color:var(--muted);letter-spacing:0.04em;margin-bottom:12px;}
+  .stat-row{
+    display:flex;justify-content:space-between;align-items:baseline;
+    font-family:var(--mono);font-size:11px;padding:4px 0;
+    border-top:1px solid rgba(123,255,224,0.08);
+  }
+  .stat-row:first-of-type{border-top:none;}
+  .stat-row .k{color:var(--muted);letter-spacing:0.04em;text-transform:uppercase;font-size:9.5px;}
+  .stat-row .v{color:var(--text);font-weight:600;}
+  .stat-row .v.ok{color:var(--green);}
+  .stat-row .v.bad{color:#ff6b6b;}
+
+  #controls{bottom:16px;left:16px;width:250px;max-height:calc(100vh - 32px);overflow:auto;}
+  #controls h2{
+    font-family:var(--sans);font-size:11px;font-weight:600;letter-spacing:0.1em;
+    text-transform:uppercase;color:var(--muted);margin:0 0 10px 0;
+  }
+  .field{margin-bottom:12px;}
+  .field label{
+    display:flex;justify-content:space-between;font-family:var(--mono);
+    font-size:10px;color:var(--muted);letter-spacing:0.03em;margin-bottom:4px;text-transform:uppercase;
+  }
+  .field label .val{color:var(--mint);}
+  input[type=range]{
+    -webkit-appearance:none;width:100%;height:3px;border-radius:2px;
+    background:rgba(123,255,224,0.15);outline:none;
+  }
+  input[type=range]::-webkit-slider-thumb{
+    -webkit-appearance:none;width:11px;height:11px;border-radius:50%;
+    background:var(--mint);cursor:pointer;box-shadow:0 0 6px var(--mint);
+  }
+  select{
+    width:100%;background:rgba(255,255,255,0.04);border:1px solid var(--panel-border);
+    color:var(--text);font-family:var(--mono);font-size:11px;padding:6px 8px;border-radius:4px;
+  }
+  .row2{display:flex;gap:8px;}
+  .row2 > div{flex:1;}
+  #playBtn{
+    width:100%;margin-top:4px;padding:8px;background:rgba(123,255,224,0.08);
+    border:1px solid var(--panel-border);border-radius:4px;color:var(--mint);
+    font-family:var(--mono);font-size:11px;letter-spacing:0.06em;cursor:pointer;text-transform:uppercase;
+  }
+  #playBtn:hover{background:rgba(123,255,224,0.16);}
+
+  #hint{
+    position:absolute;bottom:16px;right:16px;font-family:var(--mono);font-size:9.5px;
+    color:var(--muted);letter-spacing:0.04em;text-transform:uppercase;opacity:0.7;
+  }
+  #legend{position:absolute;top:16px;right:16px;font-family:var(--mono);font-size:9.5px;color:var(--muted);
+    display:flex;flex-direction:column;gap:5px;text-transform:uppercase;letter-spacing:0.04em;}
+  .legend-item{display:flex;align-items:center;gap:6px;}
+  .dot{width:7px;height:7px;border-radius:50%;flex:none;}
+</style>
+</head>
+<body>
+<div id="app">
+  <div id="canvas-container"></div>
+  <div id="labels"></div>
+
+  <div id="hud" class="panel">
+    <h1>Orbital Mesh Router</h1>
+    <div class="sub">adaptive satellite mesh &middot; dynamic route optimization</div>
+    <div class="stat-row"><span class="k">Route</span><span class="v" id="statRoute">—</span></div>
+    <div class="stat-row"><span class="k">Hops</span><span class="v" id="statHops">—</span></div>
+    <div class="stat-row"><span class="k">Path Distance</span><span class="v" id="statDist">—</span></div>
+    <div class="stat-row"><span class="k">One-way Latency</span><span class="v" id="statLatency">—</span></div>
+    <div class="stat-row"><span class="k">Link Status</span><span class="v" id="statStatus">—</span></div>
+    <div class="stat-row"><span class="k">Satellites</span><span class="v" id="statSats">—</span></div>
+  </div>
+
+  <div id="legend" class="panel">
+    <div class="legend-item"><span class="dot" style="background:var(--green);box-shadow:0 0 5px var(--green);"></span>Source</div>
+    <div class="legend-item"><span class="dot" style="background:var(--amber);box-shadow:0 0 5px var(--amber);"></span>Destination</div>
+    <div class="legend-item"><span class="dot" style="background:var(--mint);box-shadow:0 0 5px var(--mint);"></span>Active link</div>
+  </div>
+
+  <div id="controls" class="panel">
+    <h2>Constellation Design</h2>
+    <div class="row2">
+      <div class="field">
+        <label>Planes (P) <span class="val" id="valP">5</span></label>
+        <input type="range" id="rangeP" min="2" max="8" step="1" value="5">
+      </div>
+      <div class="field">
+        <label>Sats/Plane (S) <span class="val" id="valS">8</span></label>
+        <input type="range" id="rangeS" min="2" max="10" step="1" value="8">
+      </div>
+    </div>
+    <div class="field">
+      <label>Altitude <span class="val" id="valAlt">900 km</span></label>
+      <input type="range" id="rangeAlt" min="400" max="1400" step="10" value="900">
+    </div>
+    <div class="field">
+      <label>Inclination <span class="val" id="valInc">60&deg;</span></label>
+      <input type="range" id="rangeInc" min="0" max="98" step="1" value="60">
+    </div>
+
+    <h2 style="margin-top:16px;">Ground Link</h2>
+    <div class="field">
+      <label>Source</label>
+      <select id="selectSrc"></select>
+    </div>
+    <div class="field">
+      <label>Destination</label>
+      <select id="selectDst"></select>
+    </div>
+
+    <button id="playBtn">Pause simulation</button>
+  </div>
+
+  <div id="hint">drag to orbit &middot; scroll to zoom</div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script>
+(function(){
+  "use strict";
+  var DEG = Math.PI/180;
+  var GM = 398600.4418;          // km^3/s^2, Earth gravitational parameter
+  var C_KM_S = 299792.458;       // km/s
+  var EARTH_KM = 6371;
+  var SCALE = 1/1000;            // scene units per km
+  var EARTH_R = EARTH_KM*SCALE;
+  var EARTH_SPIN_N = 2*Math.PI/86164.0905; // rad/s sidereal
+  var TIME_MULT = 160;           // simulated seconds per real second
+  var MAX_RANGE = 6000*SCALE;    // max inter-node link range (scene units)
+  var ROUTE_INTERVAL = 1500;     // ms between A* recomputes
+  var PACKET_SPEED = EARTH_R*1.15; // scene units / sim-second
+
+  var stations = [
+    {name:'Berlin', lat:52.52, lon:13.405},
+    {name:'Cape Town', lat:-33.9249, lon:18.4241},
+    {name:'New York', lat:40.7128, lon:-74.0060},
+    {name:'Tokyo', lat:35.6762, lon:139.6503},
+    {name:'Sydney', lat:-33.8688, lon:151.2093},
+    {name:'Moscow', lat:55.7558, lon:37.6173},
+    {name:'Wellington', lat:-41.2865, lon:174.7762}
+  ];
+
+  function latLonToXYZ(lat, lon, r){
+    var phi = (90-lat)*DEG;
+    var theta = (lon+180)*DEG;
+    return new THREE.Vector3(
+      -r*Math.sin(phi)*Math.cos(theta),
+       r*Math.cos(phi),
+       r*Math.sin(phi)*Math.sin(theta)
+    );
+  }
+
+  function orbitPoint(r, nu, incRad, raan, target){
+    var xp = r*Math.cos(nu), zp = r*Math.sin(nu);
+    var x1 = xp, y1 = zp*Math.sin(incRad), z1 = zp*Math.cos(incRad);
+    var x2 = x1*Math.cos(raan) + z1*Math.sin(raan);
+    var y2 = y1;
+    var z2 = -x1*Math.sin(raan) + z1*Math.cos(raan);
+    if(target){ target.set(x2,y2,z2); return target; }
+    return new THREE.Vector3(x2,y2,z2);
+  }
+
+  // ---------- scene setup ----------
+  var container = document.getElementById('canvas-container');
+  var scene = new THREE.Scene();
+  scene.background = new THREE.Color(0x03050a);
+  scene.fog = new THREE.FogExp2(0x03050a, 0.0035);
+
+  var camera = new THREE.PerspectiveCamera(50, container.clientWidth/container.clientHeight, 0.05, 5000);
+  var renderer = new THREE.WebGLRenderer({antialias:true});
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio||1, 2));
+  renderer.setSize(container.clientWidth, container.clientHeight);
+  container.appendChild(renderer.domElement);
+
+  scene.add(new THREE.AmbientLight(0x8899aa, 0.55));
+  var sun = new THREE.DirectionalLight(0xffffff, 1.15);
+  sun.position.set(60,35,25);
+  scene.add(sun);
+
+  // starfield
+  (function(){
+    var starCount = 2600;
+    var positions = new Float32Array(starCount*3);
+    for(var i=0;i<starCount;i++){
+      var r = 400+Math.random()*1200;
+      var th = Math.random()*Math.PI*2;
+      var ph = Math.acos(2*Math.random()-1);
+      positions[i*3]   = r*Math.sin(ph)*Math.cos(th);
+      positions[i*3+1] = r*Math.cos(ph);
+      positions[i*3+2] = r*Math.sin(ph)*Math.sin(th);
+    }
+    var geo = new THREE.BufferGeometry();
+    geo.setAttribute('position', new THREE.BufferAttribute(positions,3));
+    var mat = new THREE.PointsMaterial({color:0xaad4ff, size:1.15, sizeAttenuation:true, transparent:true, opacity:0.85});
+    scene.add(new THREE.Points(geo,mat));
+  })();
+
+  var earthGroup = new THREE.Group();
+  scene.add(earthGroup);
+
+  function makeEarthTexture(){
+    var w=1024,h=512;
+    var c=document.createElement('canvas'); c.width=w; c.height=h;
+    var ctx=c.getContext('2d');
+    var grad=ctx.createLinearGradient(0,0,0,h);
+    grad.addColorStop(0,'#0b3654');
+    grad.addColorStop(0.5,'#0e4570');
+    grad.addColorStop(1,'#0b3654');
+    ctx.fillStyle=grad; ctx.fillRect(0,0,w,h);
+
+    function blob(cx,cy,rx,ry,rot,color){
+      ctx.save(); ctx.translate(cx,cy); ctx.rotate(rot);
+      ctx.fillStyle=color; ctx.beginPath();
+      var pts=12;
+      for(var i=0;i<=pts;i++){
+        var a=(i/pts)*Math.PI*2;
+        var rr=0.72+0.28*Math.sin(a*3+cx*0.05);
+        ctx.lineTo(Math.cos(a)*rx*rr, Math.sin(a)*ry*rr);
+      }
+      ctx.closePath(); ctx.fill(); ctx.restore();
+    }
+    var c1='#1f5f42', c2='#28714e';
+    var blobs=[
+      [140,150,95,60,0.30],[215,235,60,42,-0.40],[255,330,48,72,0.20],
+      [485,140,115,72,0.10],[525,265,72,52,-0.30],
+      [655,150,92,55,0.40],[705,265,62,82,-0.10],
+      [835,180,72,46,0.20],[865,305,52,62,0.50],
+      [385,385,145,52,0.00],[905,405,82,42,0.30],[95,300,55,40,0.15]
+    ];
+    blobs.forEach(function(b,i){ blob(b[0],b[1],b[2],b[3],b[4], i%2? c1:c2); });
+
+    ctx.strokeStyle='rgba(140,200,255,0.12)'; ctx.lineWidth=1;
+    for(var x=0;x<=w;x+=w/12){ ctx.beginPath(); ctx.moveTo(x,0); ctx.lineTo(x,h); ctx.stroke(); }
+    for(var y=0;y<=h;y+=h/6){ ctx.beginPath(); ctx.moveTo(0,y); ctx.lineTo(w,y); ctx.stroke(); }
+
+    var tex = new THREE.CanvasTexture(c);
+    tex.wrapS = THREE.RepeatWrapping;
+    return tex;
+  }
+
+  var earthMat = new THREE.MeshPhongMaterial({map:makeEarthTexture(), shininess:14, specular:0x224466});
+  var earthMesh = new THREE.Mesh(new THREE.SphereGeometry(EARTH_R,64,64), earthMat);
+  earthGroup.add(earthMesh);
+
+  var atmoMat = new THREE.ShaderMaterial({
+    vertexShader:'varying vec3 vN; void main(){ vN = normalize(normalMatrix*normal); gl_Position = projectionMatrix*modelViewMatrix*vec4(position,1.0); }',
+    fragmentShader:'varying vec3 vN; void main(){ float i = pow(0.62 - dot(vN, vec3(0.0,0.0,1.0)), 2.4); gl_FragColor = vec4(0.35,0.78,1.0,1.0) * clamp(i,0.0,1.0); }',
+    blending: THREE.AdditiveBlending, side: THREE.BackSide, transparent:true
+  });
+  var atmoMesh = new THREE.Mesh(new THREE.SphereGeometry(EARTH_R*1.07,64,64), atmoMat);
+  scene.add(atmoMesh);
+
+  var stationObjs = stations.map(function(s){
+    var pos = latLonToXYZ(s.lat, s.lon, EARTH_R*1.004);
+    var geo = new THREE.SphereGeometry(0.045,12,12);
+    var mat = new THREE.MeshBasicMaterial({color:0x6f8ca8});
+    var mesh = new THREE.Mesh(geo,mat);
+    mesh.position.copy(pos);
+    earthGroup.add(mesh);
+    return {name:s.name, lat:s.lat, lon:s.lon, mesh:mesh, localPos:pos};
+  });
+
+  var satGroup = new THREE.Group(); scene.add(satGroup);
+  var orbitLinesGroup = new THREE.Group(); scene.add(orbitLinesGroup);
+  var satellites = [];
+  var P=5, S=8, ALT=900, INC=60, F=1;
+  var planeColors=[0x5eebff,0xff8a5c,0x9dff5e,0xc86bff,0xffe45e,0x5ea1ff,0xff5ee0,0x5effc4];
+
+  function buildConstellation(){
+    while(satGroup.children.length) satGroup.remove(satGroup.children[0]);
+    while(orbitLinesGroup.children.length) orbitLinesGroup.remove(orbitLinesGroup.children[0]);
+    satellites = [];
+    var aKm = EARTH_KM+ALT;
+    var r = aKm*SCALE;
+    var n = Math.sqrt(GM/(aKm*aKm*aKm));
+    var incRad = INC*DEG;
+
+    for(var p=0;p<P;p++){
+      var raan = p*(360/P)*DEG;
+      var color = planeColors[p%planeColors.length];
+      var ringPts=[];
+      for(var k=0;k<=64;k++){
+        var nu=(k/64)*Math.PI*2;
+        ringPts.push(orbitPoint(r,nu,incRad,raan));
+      }
+      var ringGeo = new THREE.BufferGeometry().setFromPoints(ringPts);
+      var ringMat = new THREE.LineBasicMaterial({color:color, transparent:true, opacity:0.25});
+      orbitLinesGroup.add(new THREE.Line(ringGeo,ringMat));
+
+      for(var s=0;s<S;s++){
+        var nu0=(s*(360/S) + p*F*(360/(P*S)))*DEG;
+        var geo=new THREE.SphereGeometry(0.062,10,10);
+        var mat=new THREE.MeshBasicMaterial({color:color});
+        var mesh=new THREE.Mesh(geo,mat);
+        satGroup.add(mesh);
+        satellites.push({mesh:mesh, nu0:nu0, n:n, r:r, incRad:incRad, raan:raan, plane:p});
+      }
+    }
+    document.getElementById('statSats').textContent = (P*S)+' active';
+    lastRouteCalc = 0; // force a route recompute on next frame
+  }
+
+  // ---------- camera controls ----------
+  var camAz=0.8, camEl=0.5, camDist=EARTH_R*7.2;
+  var dragging=false, lastX=0, lastY=0;
+  renderer.domElement.addEventListener('pointerdown', function(e){ dragging=true; lastX=e.clientX; lastY=e.clientY; });
+  window.addEventListener('pointerup', function(){ dragging=false; });
+  window.addEventListener('pointermove', function(e){
+    if(!dragging) return;
+    var dx=e.clientX-lastX, dy=e.clientY-lastY;
+    lastX=e.clientX; lastY=e.clientY;
+    camAz -= dx*0.005;
+    camEl = Math.max(-1.3, Math.min(1.3, camEl + dy*0.005));
+  });
+  renderer.domElement.addEventListener('wheel', function(e){
+    e.preventDefault();
+    camDist *= (1+e.deltaY*0.001);
+    camDist = Math.max(EARTH_R*2.2, Math.min(EARTH_R*16, camDist));
+  }, {passive:false});
+
+  function updateCamera(){
+    camera.position.set(
+      camDist*Math.cos(camEl)*Math.sin(camAz),
+      camDist*Math.sin(camEl),
+      camDist*Math.cos(camEl)*Math.cos(camAz)
+    );
+    camera.lookAt(0,0,0);
+  }
+
+  // ---------- node positions / routing ----------
+  var simTime=0, lastFrameT=performance.now(), playing=true;
+  var sourceIdx=0, destIdx=1;
+
+  function nodeWorldPos(node, out){
+    out = out || new THREE.Vector3();
+    if(node.type==='station'){
+      var p = node.obj.localPos;
+      var th = earthGroup.rotation.y;
+      out.set(
+        p.x*Math.cos(th)+p.z*Math.sin(th),
+        p.y,
+        -p.x*Math.sin(th)+p.z*Math.cos(th)
+      );
+    } else {
+      var sat = satellites[node.idx];
+      var nu = sat.nu0 + sat.n*simTime;
+      orbitPoint(sat.r, nu, sat.incRad, sat.raan, out);
+    }
+    return out;
+  }
+
+  function hasLOS(p1,p2){
+    var dist = p1.distanceTo(p2);
+    if(dist > MAX_RANGE) return false;
+    var d = new THREE.Vector3().subVectors(p2,p1);
+    var denom = d.lengthSq();
+    if(denom < 1e-9) return true;
+    var t = -p1.dot(d)/denom;
+    t = Math.max(0, Math.min(1,t));
+    var closest = new THREE.Vector3().copy(p1).addScaledVector(d,t);
+    return closest.length() > EARTH_R*0.999;
+  }
+
+  function allNodeRefs(){
+    var nodes=[];
+    stationObjs.forEach(function(s,i){ nodes.push({type:'station', obj:s, id:'st'+i}); });
+    satellites.forEach(function(sat,i){ nodes.push({type:'sat', idx:i, id:'sat'+i}); });
+    return nodes;
+  }
+
+  function idToNodeRef(id){
+    if(id.indexOf('st')===0) return {type:'station', obj:stationObjs[parseInt(id.slice(2),10)]};
+    return {type:'sat', idx:parseInt(id.slice(3),10)};
+  }
+
+  function runAstar(sourceId, targetId, nodePositions, ids){
+    var g={}, f={}, came={};
+    ids.forEach(function(id){ g[id]=Infinity; });
+    g[sourceId]=0;
+    function h(id){ return nodePositions[id].distanceTo(nodePositions[targetId]); }
+    f[sourceId]=h(sourceId);
+    var open = {}; open[sourceId]=true;
+    var closed = {};
+
+    while(Object.keys(open).length){
+      var current=null, best=Infinity;
+      for(var id in open){ if(f[id]<best){ best=f[id]; current=id; } }
+      if(current===targetId){
+        var path=[current];
+        while(came[current]){ current=came[current]; path.unshift(current); }
+        return {path:path, distance:g[targetId]};
+      }
+      delete open[current]; closed[current]=true;
+      for(var j=0;j<ids.length;j++){
+        var nb=ids[j];
+        if(nb===current || closed[nb]) continue;
+        var p1=nodePositions[current], p2=nodePositions[nb];
+        if(!hasLOS(p1,p2)) continue;
+        var tentative = g[current] + p1.distanceTo(p2);
+        if(tentative < g[nb]){
+          came[nb]=current; g[nb]=tentative;
+          f[nb]=tentative+h(nb);
+          open[nb]=true;
+        }
+      }
+    }
+    return null;
+  }
+
+  var currentPath = [];
+  var lastRouteCalc = 0;
+
+  function computeRoute(){
+    var nodes = allNodeRefs();
+    var nodePositions={}, ids=[];
+    nodes.forEach(function(nd){
+      nodePositions[nd.id]=nodeWorldPos(nd);
+      ids.push(nd.id);
+    });
+    var srcId='st'+sourceIdx, dstId='st'+destIdx;
+    var result = runAstar(srcId,dstId,nodePositions,ids);
+    var routeName = stationObjs[sourceIdx].name+' \u2192 '+stationObjs[destIdx].name;
+    document.getElementById('statRoute').textContent = routeName;
+    if(result && result.path.length>1){
+      currentPath = result.path.map(idToNodeRef);
+      var distKm = result.distance/SCALE;
+      document.getElementById('statHops').textContent = (currentPath.length-2)+' relay(s)';
+      document.getElementById('statDist').textContent = Math.round(distKm).toLocaleString()+' km';
+      document.getElementById('statLatency').textContent = (distKm/C_KM_S*1000).toFixed(1)+' ms';
+      var statusEl = document.getElementById('statStatus');
+      statusEl.textContent='LINK ACTIVE'; statusEl.className='v ok';
+    } else {
+      currentPath=[];
+      document.getElementById('statHops').textContent='—';
+      document.getElementById('statDist').textContent='—';
+      document.getElementById('statLatency').textContent='—';
+      var statusEl2 = document.getElementById('statStatus');
+      statusEl2.textContent='NO LINE OF SIGHT'; statusEl2.className='v bad';
+    }
+  }
+
+  // ---------- route line + packet animation ----------
+  var routeLine=null;
+  var packetMesh, pulseGroup;
+  (function(){
+    var geo=new THREE.SphereGeometry(0.085,12,12);
+    var mat=new THREE.MeshBasicMaterial({color:0xffffff});
+    packetMesh=new THREE.Mesh(geo,mat);
+    packetMesh.visible=false;
+    scene.add(packetMesh);
+    pulseGroup=new THREE.Group();
+    scene.add(pulseGroup);
+  })();
+
+  var packetT=0, lastHopIndex=-1;
+
+  function spawnPulse(pos){
+    var geo=new THREE.RingGeometry(0.02,0.045,24);
+    var mat=new THREE.MeshBasicMaterial({color:0x7bffe0, transparent:true, opacity:0.85, side:THREE.DoubleSide});
+    var ring=new THREE.Mesh(geo,mat);
+    ring.position.copy(pos);
+    ring.lookAt(camera.position);
+    ring.userData.birth=performance.now();
+    pulseGroup.add(ring);
+  }
+
+  function updatePulses(){
+    var now=performance.now();
+    pulseGroup.children.slice().forEach(function(ring){
+      var age=(now-ring.userData.birth)/1000;
+      if(age>1.1){ pulseGroup.remove(ring); return; }
+      var sc=1+age*6.5;
+      ring.scale.set(sc,sc,sc);
+      ring.material.opacity=0.85*(1-age/1.1);
+      ring.lookAt(camera.position);
+    });
+  }
+
+  function updateRouteLineAndPacket(dtSim){
+    if(currentPath.length<2){
+      if(routeLine) routeLine.visible=false;
+      packetMesh.visible=false;
+      return;
+    }
+    var pts = currentPath.map(function(n){ return nodeWorldPos(n, new THREE.Vector3()); });
+
+    if(!routeLine){
+      var geo=new THREE.BufferGeometry().setFromPoints(pts);
+      var mat=new THREE.LineBasicMaterial({color:0x7bffe0, transparent:true, opacity:0.85});
+      routeLine=new THREE.Line(geo,mat);
+      scene.add(routeLine);
+    } else {
+      routeLine.geometry.dispose();
+      routeLine.geometry=new THREE.BufferGeometry().setFromPoints(pts);
+    }
+    routeLine.visible=true;
+
+    var segLens=[], total=0;
+    for(var i=0;i<pts.length-1;i++){
+      var l=pts[i].distanceTo(pts[i+1]);
+      segLens.push(l); total+=l;
+    }
+    if(total<=0) return;
+
+    packetT += dtSim*PACKET_SPEED;
+    if(packetT>total) packetT = packetT % total;
+
+    var acc=0, segIdx=0;
+    for(;segIdx<segLens.length;segIdx++){
+      if(acc+segLens[segIdx] >= packetT) break;
+      acc += segLens[segIdx];
+    }
+    if(segIdx>segLens.length-1) segIdx=segLens.length-1;
+    var segLen=segLens[segIdx];
+    var segT = segLen>0 ? (packetT-acc)/segLen : 0;
+    segT = Math.max(0,Math.min(1,segT));
+    var pos=new THREE.Vector3().lerpVectors(pts[segIdx], pts[segIdx+1], segT);
+    packetMesh.position.copy(pos);
+    packetMesh.visible=true;
+
+    if(segIdx!==lastHopIndex){
+      lastHopIndex=segIdx;
+      spawnPulse(pts[segIdx]);
+    }
+  }
+
+  // ---------- labels ----------
+  var labelsContainer=document.getElementById('labels');
+  var labelEls = stationObjs.map(function(s){
+    var el=document.createElement('div');
+    el.className='station-label';
+    el.textContent=s.name;
+    labelsContainer.appendChild(el);
+    return el;
+  });
+
+  function updateLabels(){
+    var v=new THREE.Vector3();
+    stationObjs.forEach(function(s,i){
+      nodeWorldPos({type:'station',obj:s}, v);
+      var pv=v.clone().project(camera);
+      var x=(pv.x*0.5+0.5)*container.clientWidth;
+      var y=(1-(pv.y*0.5+0.5))*container.clientHeight;
+      var el=labelEls[i];
+      var visible = pv.z<1;
+      el.style.display = visible? 'block':'none';
+      el.style.left=x+'px'; el.style.top=y+'px';
+      el.classList.toggle('active', i===sourceIdx || i===destIdx);
+      el.classList.toggle('src', i===sourceIdx);
+      el.classList.toggle('dst', i===destIdx);
+    });
+  }
+
+  // ---------- UI wiring ----------
+  var rangeP=document.getElementById('rangeP'), valP=document.getElementById('valP');
+  var rangeS=document.getElementById('rangeS'), valS=document.getElementById('valS');
+  var rangeAlt=document.getElementById('rangeAlt'), valAlt=document.getElementById('valAlt');
+  var rangeInc=document.getElementById('rangeInc'), valInc=document.getElementById('valInc');
+  var selectSrc=document.getElementById('selectSrc'), selectDst=document.getElementById('selectDst');
+  var playBtn=document.getElementById('playBtn');
+
+  stations.forEach(function(s,i){
+    var o1=document.createElement('option'); o1.value=i; o1.textContent=s.name; selectSrc.appendChild(o1);
+    var o2=document.createElement('option'); o2.value=i; o2.textContent=s.name; selectDst.appendChild(o2);
+  });
+  selectSrc.value=sourceIdx; selectDst.value=destIdx;
+
+  function onDesignChange(){
+    P=parseInt(rangeP.value,10); valP.textContent=P;
+    S=parseInt(rangeS.value,10); valS.textContent=S;
+    ALT=parseInt(rangeAlt.value,10); valAlt.textContent=ALT+' km';
+    INC=parseInt(rangeInc.value,10); valInc.textContent=INC+'\u00b0';
+    buildConstellation();
+  }
+  [rangeP,rangeS,rangeAlt,rangeInc].forEach(function(r){ r.addEventListener('input', onDesignChange); });
+
+  selectSrc.addEventListener('change', function(){
+    sourceIdx=parseInt(selectSrc.value,10);
+    if(sourceIdx===destIdx){ destIdx=(sourceIdx+1)%stations.length; selectDst.value=destIdx; }
+    lastRouteCalc=0;
+  });
+  selectDst.addEventListener('change', function(){
+    destIdx=parseInt(selectDst.value,10);
+    if(destIdx===sourceIdx){ sourceIdx=(destIdx+1)%stations.length; selectSrc.value=sourceIdx; }
+    lastRouteCalc=0;
+  });
+  playBtn.addEventListener('click', function(){
+    playing=!playing;
+    playBtn.textContent = playing? 'Pause simulation':'Resume simulation';
+  });
+
+  window.addEventListener('resize', function(){
+    camera.aspect=container.clientWidth/container.clientHeight;
+    camera.updateProjectionMatrix();
+    renderer.setSize(container.clientWidth, container.clientHeight);
+  });
+
+  // ---------- main loop ----------
+  buildConstellation();
+
+  function animate(now){
+    requestAnimationFrame(animate);
+    var dtReal=(now-lastFrameT)/1000; lastFrameT=now;
+    var dtSim = dtReal*TIME_MULT;
+    if(playing){ simTime += dtSim; }
+
+    earthGroup.rotation.y = (EARTH_SPIN_N*simTime) % (2*Math.PI);
+
+    var tmp=new THREE.Vector3();
+    satellites.forEach(function(sat){
+      var nu = sat.nu0 + sat.n*simTime;
+      orbitPoint(sat.r, nu, sat.incRad, sat.raan, tmp);
+      sat.mesh.position.copy(tmp);
+    });
+
+    if(now-lastRouteCalc > ROUTE_INTERVAL){
+      lastRouteCalc=now;
+      computeRoute();
+    }
+
+    updateRouteLineAndPacket(playing? dtSim : 0);
+    updatePulses();
+    updateCamera();
+    updateLabels();
+    renderer.render(scene,camera);
+  }
+  requestAnimationFrame(animate);
+})();
+</script>
+</body>
+</html>
